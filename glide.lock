@@ -1,5 +1,5 @@
-hash: 07d3556d9858a81553d499abb269f5f24aa7546d925c371f4892454c1000e5db
-updated: 2018-02-27T15:03:14.338445+01:00
+hash: 20b1ad8d7d5c35e7868c6d3eb02b6199fa0902b1a182ae6411b8312f5bd8699c
+updated: 2018-03-13T15:56:42.876718+01:00
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
@@ -121,6 +121,8 @@ imports:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/mitchellh/hashstructure
+  version: 2bca23e0e452137f789efbc8610126fd8b94f73b
 - name: github.com/mitchellh/mapstructure
   version: d0303fe809921458f417bcf828397a65db30a7e4
 - name: github.com/nats-io/go-nats
@@ -151,7 +153,7 @@ imports:
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
+  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/spf13/pflag
   version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/ugorji/go
