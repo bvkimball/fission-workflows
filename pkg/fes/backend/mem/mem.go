@@ -45,8 +45,8 @@ func (b *Backend) Append(event *fes.Event) error {
 	return b.Publish(event)
 }
 
-func (b *Backend) Get(aggregate *fes.Aggregate) ([]*fes.Event, error) {
-	if !fes.ValidateAggregate(aggregate) {
+func (b *Backend) Get(aggregate fes.Aggregate) ([]*fes.Event, error) {
+	if !fes.ValidateAggregate(&aggregate) {
 		return nil, ErrInvalidAggregate
 	}
 

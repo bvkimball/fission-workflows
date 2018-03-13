@@ -1,19 +1,24 @@
 package nats
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/fission/fission-workflows/pkg/fes"
 	"github.com/fission/fission-workflows/pkg/util/pubsub"
 	"github.com/golang/protobuf/proto"
-	nats "github.com/nats-io/go-nats"
+	"github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/sirupsen/logrus"
 )
 
 const (
 	defaultClient = "fes"
+)
+
+var (
+	ErrInvalidAggregate = errors.New("invalid aggregate")
 )
 
 type EventStore struct {
@@ -24,14 +29,9 @@ type EventStore struct {
 }
 
 type Config struct {
-	//Cluster: clusterId,
-	//Client:  "someClient",
-	//Url:     fmt.Sprintf("nats://%s:%d", address, port),
 	Cluster string
 	Client  string
-
-	// Example: nats://localhost:9300
-	Url string
+	Url     string
 }
 
 func NewEventStore(conn *WildcardConn, cfg Config) *EventStore {
@@ -101,9 +101,9 @@ func (es *EventStore) Close() error {
 
 func (es *EventStore) Append(event *fes.Event) error {
 	// TODO make generic / configurable whether to fold event into parent's Subject
-	subject := toSubject(event.Aggregate)
+	subject := toSubject(*event.Aggregate)
 	if event.Parent != nil {
-		subject = toSubject(event.Parent)
+		subject = toSubject(*event.Parent)
 	}
 	data, err := proto.Marshal(event)
 	if err != nil {
@@ -121,16 +121,21 @@ func (es *EventStore) Append(event *fes.Event) error {
 	return es.conn.Publish(subject, data)
 }
 
-func (es *EventStore) Get(aggregate *fes.Aggregate) ([]*fes.Event, error) {
+func (es *EventStore) Get(aggregate fes.Aggregate) ([]*fes.Event, error) {
+	if !fes.ValidateAggregate(&aggregate) {
+		return nil, ErrInvalidAggregate
+	}
 	subject := toSubject(aggregate)
+
+	// TODO check if subject exists in NATS (MsgSeqRange takes a long time otherwise)
 
 	msgs, err := es.conn.MsgSeqRange(subject, firstMsg, mostRecentMsg)
 	if err != nil {
 		return nil, err
 	}
 	var results []*fes.Event
-	for _, msg := range msgs {
-		event, err := toEvent(msg)
+	for k := range msgs {
+		event, err := toEvent(msgs[k])
 		if err != nil {
 			return nil, err
 		}
@@ -165,7 +170,7 @@ func toAggregate(subject string) *fes.Aggregate {
 	}
 }
 
-func toSubject(a *fes.Aggregate) string {
+func toSubject(a fes.Aggregate) string {
 	return fmt.Sprintf("%s.%s", a.Type, a.Id)
 }
 
