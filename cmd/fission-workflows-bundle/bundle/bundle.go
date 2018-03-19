@@ -15,6 +15,7 @@ import (
 	wfictr "github.com/fission/fission-workflows/pkg/controller/invocation"
 	wfctr "github.com/fission/fission-workflows/pkg/controller/workflow"
 	"github.com/fission/fission-workflows/pkg/fes"
+	"github.com/fission/fission-workflows/pkg/fes/backend/mem"
 	"github.com/fission/fission-workflows/pkg/fes/backend/nats"
 	"github.com/fission/fission-workflows/pkg/fnenv"
 	"github.com/fission/fission-workflows/pkg/fnenv/fission"
@@ -76,6 +77,11 @@ func Run(ctx context.Context, opts *Options) error {
 		natsEs := setupNatsEventStoreClient(opts.Nats.Url, opts.Nats.Cluster, opts.Nats.Client)
 		es = natsEs
 		esPub = natsEs
+	} else {
+		log.Infof("Using event store: MEM")
+		memEs := mem.NewBackend()
+		es = memEs
+		esPub = memEs
 	}
 
 	// Caches
